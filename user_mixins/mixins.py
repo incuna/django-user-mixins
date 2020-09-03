@@ -9,7 +9,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext_lazy as _
 
-from user_management.utils import notifications
+from . import notifications
 
 
 class UserManager(BaseUserManager):
@@ -193,7 +193,7 @@ class EmailVerifyUserMixin(EmailVerifyUserMethodsMixin, models.Model):
                 "Manager should be an instance of 'VerifyEmailManager'",
                 hint="Subclass a custom manager from 'VerifyEmailManager'",
                 obj=cls,
-                id='user_management.W001',
+                id='user_mixins.W001',
             ),
         ]
 

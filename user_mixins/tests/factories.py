@@ -2,8 +2,7 @@ import factory
 
 from django.contrib.auth import get_user_model
 
-from user_management.api.models import AuthToken
-from user_management.models.tests.models import VerifyEmailUser
+from .models import VerifyEmailUser
 
 
 class UserFactory(factory.DjangoModelFactory):
@@ -27,11 +26,3 @@ class VerifyEmailUserFactory(UserFactory):
 
     class Meta:
         model = VerifyEmailUser
-
-
-class AuthTokenFactory(factory.DjangoModelFactory):
-    key = factory.Sequence('key{}'.format)
-    user = factory.SubFactory(UserFactory)
-
-    class Meta:
-        model = AuthToken

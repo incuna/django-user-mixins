@@ -1,4 +1,4 @@
-from user_management.utils.notifications import PasswordResetNotification
+from user_mixins.notifications import PasswordResetNotification
 
 
 class CustomPasswordResetNotification(PasswordResetNotification):

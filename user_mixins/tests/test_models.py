@@ -1,27 +1,34 @@
 # -*- coding: utf-8 -*-
 
+from unittest.mock import Mock, patch
+
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
-from django.core import checks
+from django.core import checks, signing
 from django.db.models import TextField
 from django.db.utils import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
-from mock import Mock, patch
+from user_mixins.notifications import (
+    password_reset_email_context,
+    validation_email_context,
+)
+from user_mixins.tests import utils
 
-from user_management.models.tests import utils
-from user_management.utils.notifications import validation_email_context
 from . import models
 from .factories import UserFactory
 from .. import mixins
 
 
-PASSWORD_CONTEXT = 'user_management.utils.notifications.password_reset_email_context'
-VALIDATION_CONTEXT = 'user_management.utils.notifications.validation_email_context'
-SEND_METHOD = 'user_management.utils.notifications.incuna_mail.send'
+PASSWORD_CONTEXT = 'user_mixins.notifications.password_reset_email_context'
+VALIDATION_CONTEXT = 'user_mixins.notifications.validation_email_context'
+SEND_METHOD = 'user_mixins.notifications.incuna_mail.send'
 
 
-class TestUser(utils.APIRequestTestCase):
+class TestUser(utils.RequestTestCase):
     """Test the "User" model"""
     model = models.User
 
@@ -46,8 +53,6 @@ class TestUser(utils.APIRequestTestCase):
             'groups',  # Django permission groups
             'user_permissions',
             'logentry',  # Django admin logs
-            'authtoken',
-            'auth_token',  # Rest framework authtoken
         }
 
         self.assertCountEqual(fields, expected)
@@ -192,6 +197,7 @@ class TestVerifyEmailMixin(TestCase):
             'protocol': 'https',
             'token': mocked_user.generate_validation_token(),
             'site': mocked_site,
+            'path': 'verify-email',
         }
         self.assertEqual(context, expected_context)
 
@@ -207,8 +213,8 @@ class TestVerifyEmailMixin(TestCase):
 
         expected = {
             'to': user.email,
-            'template_name': 'user_management/account_validation_email.txt',
-            'html_template_name': 'user_management/account_validation_email.html',
+            'template_name': 'user_mixins/account_validation_email.txt',
+            'html_template_name': 'user_mixins/account_validation_email.html',
             'subject': '{} account validate'.format(site.domain),
             'context': context,
             'headers': {},
@@ -224,6 +230,62 @@ class TestVerifyEmailMixin(TestCase):
 
         self.assertFalse(send.called)
 
+    def test_password_reset_context(self):
+        """Assert `password_reset_email_context` returns the correct data."""
+        mocked_user = Mock()
+        mocked_site = Mock()
+
+        class DummyNotification:
+            user = mocked_user
+            site = mocked_site
+
+        notification = DummyNotification()
+        context = password_reset_email_context(notification)
+
+        expected_context = {
+            'protocol': 'https',
+            'uid': mocked_user.generate_uid(),
+            'token': mocked_user.generate_token(),
+            'site': mocked_site,
+            'path': 'password-reset',
+        }
+        self.assertEqual(context, expected_context)
+
+    def test_send_password_reset_email(self):
+        context = {}
+        site = Site.objects.get_current()
+        user = self.model(email='email@email.email')
+
+        with patch(PASSWORD_CONTEXT) as get_context:
+            get_context.return_value = context
+            with patch(SEND_METHOD) as send:
+                user.send_password_reset()
+
+        expected = {
+            'to': user.email,
+            'template_name': 'user_mixins/password_reset_email.txt',
+            'html_template_name': 'user_mixins/password_reset_email.html',
+            'subject': '{} password reset'.format(site.domain),
+            'context': context,
+            'headers': {},
+        }
+        send.assert_called_once_with(**expected)
+
+    def test_generate_validation_token(self):
+        user = self.model()
+        expected = signing.dumps({'email': user.email})
+        self.assertEqual(user.generate_validation_token(), expected)
+
+    def test_generate_token(self):
+        user = self.model()
+        expected = default_token_generator.make_token(user)
+        self.assertEqual(user.generate_token(), expected)
+
+    def test_generate_uid(self):
+        user = self.model()
+        expected = urlsafe_base64_encode(force_bytes(user.pk))
+        self.assertEqual(user.generate_uid(), expected)
+
     def test_manager_check_valid(self):
         errors = self.model.check()
         self.assertEqual(errors, [])
@@ -237,14 +299,14 @@ class TestVerifyEmailMixin(TestCase):
                 "Manager should be an instance of 'VerifyEmailManager'",
                 hint="Subclass a custom manager from 'VerifyEmailManager'",
                 obj=InvalidUser,
-                id='user_management.W001',
+                id='user_mixins.W001',
             ),
         ]
         errors = InvalidUser.check()
         self.assertEqual(errors, expected)
 
 
-class TestCustomNameUser(utils.APIRequestTestCase):
+class TestCustomNameUser(utils.RequestTestCase):
     model = models.CustomNameUser
 
     def test_fields(self):

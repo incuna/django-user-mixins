@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import django.utils.timezone
-import user_management.models.mixins
+import user_mixins.mixins
 
 
 class Migration(migrations.Migration):
@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(user_management.models.mixins.EmailVerifyUserMethodsMixin, user_management.models.mixins.NameUserMethodsMixin, models.Model),
+            bases=(user_mixins.mixins.EmailVerifyUserMethodsMixin, user_mixins.mixins.NameUserMethodsMixin, models.Model),
         ),
         migrations.CreateModel(
             name='BasicUser',
@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(user_management.models.mixins.NameUserMethodsMixin, models.Model),
+            bases=(user_mixins.mixins.NameUserMethodsMixin, models.Model),
         ),
         migrations.CreateModel(
             name='CustomNameUser',
@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(user_management.models.mixins.EmailVerifyUserMethodsMixin, user_management.models.mixins.NameUserMethodsMixin, models.Model),
+            bases=(user_mixins.mixins.EmailVerifyUserMethodsMixin, user_mixins.mixins.NameUserMethodsMixin, models.Model),
         ),
         migrations.CreateModel(
             name='CustomVerifyEmailUser',
@@ -86,7 +86,7 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(user_management.models.mixins.EmailVerifyUserMethodsMixin, user_management.models.mixins.NameUserMethodsMixin, models.Model),
+            bases=(user_mixins.mixins.EmailVerifyUserMethodsMixin, user_mixins.mixins.NameUserMethodsMixin, models.Model),
         ),
         migrations.CreateModel(
             name='VerifyEmailUser',
@@ -104,6 +104,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(user_management.models.mixins.EmailVerifyUserMethodsMixin, user_management.models.mixins.NameUserMethodsMixin, models.Model),
+            bases=(user_mixins.mixins.EmailVerifyUserMethodsMixin, user_mixins.mixins.NameUserMethodsMixin, models.Model),
         ),
     ]

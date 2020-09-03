@@ -10,7 +10,7 @@ register an account at {{ name }}.
 Please click the following link to complete your registration:
 {% endblocktrans %}
 </p>
-<p><a href="{{ protocol }}://{{ site.domain }}/#/register/verify/{{ token }}/">{{ protocol }}://{{ site.domain }}/#/register/verify/{{ token }}/</a></p>
+<p><a href="{{ protocol }}://{{ site.domain }}/{{ path }}/{{ token }}/">{{ protocol }}://{{ site.domain }}/{{ path }}/{{ token }}/</a></p>
 <p>
 {% blocktrans with name=site.name %}
 The {{ name }} team.

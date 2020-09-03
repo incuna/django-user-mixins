@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('tests', '0001_initial'),
-        ('api', '0002_authtoken_user'),
     ]
 
     operations = [

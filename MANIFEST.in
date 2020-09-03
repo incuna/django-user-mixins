@@ -1,1 +1,1 @@
-recursive-include user_management/**/templates *
+recursive-include user_mixins/**/templates *

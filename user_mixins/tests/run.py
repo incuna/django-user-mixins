@@ -12,15 +12,14 @@ from django.conf import settings
 
 KEEPDB = literal_eval(os.environ.get('KEEPDB', 'False'))
 MIGRATION_MODULES = {
-    'api': 'user_management.tests.testmigrations.api',
-    'tests': 'user_management.tests.testmigrations.tests',
+    'tests': 'user_mixins.tests.testmigrations.tests',
 }
 
 
 settings.configure(
     DATABASES={
         'default': dj_database_url.config(
-            default='postgres://localhost/user_management_api',
+            default='postgres://localhost/user_mixins',
         ),
     },
     DEFAULT_FILE_STORAGE='inmemorystorage.InMemoryStorage',
@@ -34,31 +33,22 @@ settings.configure(
         'django.contrib.admin',
         'django.contrib.messages',
 
-        'rest_framework.authtoken',
-
         # Added for templates
-        'user_management.api',
-        'user_management.ui',
-        'user_management.models.tests',
+        'user_mixins',
+        'user_mixins.tests',
     ),
     PASSWORD_HASHERS=('django.contrib.auth.hashers.MD5PasswordHasher',),
     SITE_ID=1,
     AUTH_USER_MODEL='tests.User',
     AUTHENTICATION_BACKENDS=(
-        'user_management.models.backends.CaseInsensitiveEmailBackend',
+        'user_mixins.backends.CaseInsensitiveEmailBackend',
     ),
     MIDDLEWARE=(
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
     ),
-    ROOT_URLCONF='user_management.api.tests.urls',
-    REST_FRAMEWORK={
-        'DEFAULT_AUTHENTICATION_CLASSES': (
-            'rest_framework.authentication.TokenAuthentication',
-        ),
-    },
-    SENTRY_CLIENT='user_management.utils.sentry.SensitiveDjangoClient',
+    # ROOT_URLCONF='user_mixins.tests.urls',
     USE_TZ=True,
     TIME_ZONE='UTC',
     MIGRATION_MODULES=MIGRATION_MODULES,
@@ -89,6 +79,6 @@ class TestRunner(ColourRunnerMixin, DiscoverRunner):
 
 
 test_runner = TestRunner(verbosity=1, keepdb=KEEPDB)
-failures = test_runner.run_tests(['user_management'])
+failures = test_runner.run_tests(['user_mixins'])
 if failures:
     sys.exit(1)
